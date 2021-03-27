@@ -1,0 +1,61 @@
+
+{% load static %}
+
+<link href="{% static 'css/bootstrap-5.0.0-beta3.min.css' %}" rel="stylesheet" type="text/css"  crossorigin>
+<link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css"  crossorigin>
+
+<script src="{% static 'js/jquery-3.6.0.min.js' %}" type="text/javascript" ></script>
+
+    <div class="head" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;">
+        <h1>Side Stacker</h1>
+    </div>
+    <form action="{% url 'create_game' host_name='none_room' %}" method="post">    
+        {% csrf_token %}
+        <div class="container" >
+            <div class="input-group" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;" >
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="">Room's Name</span>
+                </div>
+                <input id="player_name" required="required" name="player_name" type="text" class="form-control">        
+                
+            </div>  
+            <div class="input-group" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;" >
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id=""># Rows</span>
+                </div>
+                <input id="rows" name="rows" required="required" type="number" min="3" max="20" class="form-control">   
+             
+            </div>
+            <div class="input-group" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;" >
+                 
+              
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id=""># Colmuns</span>
+                </div>
+                <input id="columns" name="columns" required="required"  min="3" max="20" type="number" class="form-control">   
+              
+                
+            </div>  
+            <div class="input-group home-form" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;" >
+                
+                <button id="start_game_button" type="submit" class="btn btn-primary">Create Game!!</button>     
+            </div>     
+            <div class="input-group" style="margin-top: 5%;width:25%;margin-left: auto;margin-right: auto;" >
+                <div class="row">
+                    <h2>Public games</h2>
+                    <ul class="list-group">
+                        {% for rooms in games %}
+                            <li id="games_{{ rooms.room_name }}" onclick="myFunction('{{ rooms.room_name }}')" class="list-group-item list-group-item-action" ><href src='{% url "connect_game" rooms.room_name %}'>{{ rooms.room_name }}</href></li>
+                          
+                        {% endfor %}
+                    </ul>              
+                </div>
+            </div>
+            
+        </div>
+        <script>
+            function myFunction(room_name){
+                window.location.href = "/game/"+room_name;
+            }
+        </script>
+    </form>

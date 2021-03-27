@@ -1,0 +1,53 @@
+/* static/css/main.css */
+
+#game_board {
+    display: grid;
+    grid-gap: 0.5em;
+    grid-template-columns: repeat(10, 1fr);
+    width: fit-content;
+    height: auto;
+    max-height: 400px;
+    margin: 0.5em 0;
+    overflow: scroll;
+    margin-left: auto;
+    margin-right: auto;
+}
+.square{
+    background: #2f76c7;
+    width: 5em;
+    height: 5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.5em;
+    font-weight: 500;
+    color: white;
+    box-shadow: 0.025em 0.125em 0.25em rgba(0, 0, 0, 0.25);
+}
+.head{
+    width: 16em;
+    text-align: center; 
+}
+.wrapper h1, h3 {
+    color: #0a2c1a;
+}
+
+label {
+    font-size: 20px;
+    color: #0a2c1a;
+}
+input, select{
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #125a33;
+    font-size: 14px;
+    background-color: #71d19e;
+    color: white;
+}
+.home-form{
+    margin-top: 1%;
+    width:25%;
+    margin-left: auto;
+    margin-right: auto;
+}
