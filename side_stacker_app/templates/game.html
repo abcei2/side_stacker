@@ -6,10 +6,16 @@
     <link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css"  crossorigin>
     <div class="wrapper" >
         <div class="head" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;">
-            <h1>Side Stacker</h1>
-            <h3>Welcome to room: {{ host_name }}'s room</h3>
-            <h3>You are player: {{ player }}</h3>
+            
+            <div id="game_head">
+                <h1>Side Stacker</h1>
+                <h3 id="alert_text">Welcome to room: {{ host_name }}'s room</h3>
+                <h3>You are player: {{ player }}</h3>
+                <h3 id="timer_redirect" hidden>Redirecting</h3>
+            </div>
+            
         </div>
+        
         <div id = "game_board" >
             
             {% for index in ammount_squares|times %}
@@ -43,31 +49,21 @@
         }
         let moveCount = 0;
         let myturn = true;
-        var char_choice = "{{ player }}"
-        let elementArray = document.getElementsByClassName('square');       
+        var player_tag = "{{ player }}"
+        let elementArray = document.getElementsByClassName('square'); 
+        var win_flag=false;  
+        let timer_out=0;          
 
 
         function reset(){
             
             window.location.href = "/";
         }
-        /*
-        * VARIABLES
-        */
-        // Define el nombre de la sala
         const SALA_CHAT = '{{ host_name }}';
-        // Conecta con WebSockets
-        const CHAT_SOCKET = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + SALA_CHAT + '/');
-        // Captura el campo con el nombre del usuario
-        const CAMPO_NOMBRE = document.querySelector('#nombre');
-        // Captura el contenedor que posee todos los mensajes
-        const MENSAJES = document.querySelector('#mensajes');
-        // Captura el campo con el nuevo texto
-        const CAMPO_TEXTO = document.querySelector('#texto');
-        // Boton para enviar mensaje
-        const BOTON_ENVIAR = document.querySelector('#enviar');
+        const GAME_SOCKET = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + SALA_CHAT + '/');
+        const REDIRECTION_TIME_OUT=5000;
 
-        if(char_choice=="X"){
+        if(player_tag=="X"){
             myturn=false
             document.getElementById("alert_move").style.display = 'none'; // Hide    
         }
@@ -79,9 +75,9 @@
                         alert("Wait for other to place the move")
                     }
                     else{
-                        myturn = false;
+                        myturn = true;
                         document.getElementById("alert_move").style.display = 'none'; // Hide          
-                        make_move(index, char_choice);
+                        make_move(index, player_tag);
                     }
                 }
             })
@@ -114,7 +110,6 @@
                     gameBoard2d.push(gameBoard_aux.splice(0,{{ columns }} ));
                 } 
 
-                win_total=false
                 console.log(gameBoard2d.length,gameBoard2d[0].length)
                 for(let i=0;i<gameBoard2d.length;i++){
                     for(let j=0;j<gameBoard2d[0].length;j++){
@@ -146,20 +141,20 @@
                         for(kk in win){
                             if(win[kk]){
                                 console.log("win on conditional",kk)
-                                win_total=true
+                                win_flag=true
                                 break;
                             }
                         
                         }
-                        if(win_total)
+                        if(win_flag)
                             break
                     }    
                     
-                    if(win_total)
+                    if(win_flag)
                         break
                 }
                 
-                if(win_total){
+                if(win_flag){
                     data = {
                         "game_event": "END",
                         "message": 
@@ -169,8 +164,7 @@
 
                 }
                 
-                console.log(data)
-                CHAT_SOCKET.send(JSON.stringify(data))
+                GAME_SOCKET.send(JSON.stringify(data))
             }
             
             elementArray[index].innerHTML = player;
@@ -183,17 +177,17 @@
         */
 
         // Conectado
-        CHAT_SOCKET.addEventListener('open', () => {
+        GAME_SOCKET.addEventListener('open', () => {
             console.log('Connected');
         });
         // Desconectado
-        CHAT_SOCKET.addEventListener('close', () => {
+        GAME_SOCKET.addEventListener('close', () => {
             console.log('Disconnected');
             
         });
 
         // Recibir mensaje
-        CHAT_SOCKET.addEventListener('message', (event) => {
+        GAME_SOCKET.addEventListener('message', (event) => {
             let data = JSON.parse(event.data);
             console.log('New message',data);
       
@@ -203,16 +197,27 @@
                 case "START":
                     break;
                 case "END":
-                    alert(message)
+                    if(win_flag){
+                        $("#alert_text").html("YOU ARE THE WINNER!")
+                        $("#alert_text").css('color','green')
+
+                    }else{
+                        
+                        $("#alert_text").html("YOU ARE THE LOSER!")
+                        $("#alert_text").css('color','red')
+                    }
+                    
+                    
                     break;
                 case "USER_DISCONECTED":
                     
-                    alert(message)
+                    $("#alert_text").html(message)
+                    $("#alert_text").css('color','green')
               
                 
                     break;
                 case "MOVE":
-                    if(message["player"] != char_choice){
+                    if(message["player"] != player_tag){
                         make_move(message["index"], message["player"])
                         myturn = true;
                         document.getElementById("alert_move").style.display = 'inline';        
@@ -225,15 +230,30 @@
             }
             if(game_event=="USER_DISCONECTED" || game_event=="END"){
                 $("#game_board").css("display","none")
-        
+                $("#timer_redirect").removeAttr('hidden')
                 setTimeout(
                     function(){
-
-                        reset()
+                        time_to_redirect(0)
                     },100
                 )
             }
             const MI_NUEVA_DATA = JSON.parse(event.data);
         });
+        function time_to_redirect(time_elapsed){
+      
+            time_elapsed=time_elapsed+100
+            if(time_elapsed>REDIRECTION_TIME_OUT){
+                reset()
+            }else{
+                let seconds_left=Math.ceil((REDIRECTION_TIME_OUT-time_elapsed)/1000)
+                $("#timer_redirect").html("Redirecting to lobby in "+seconds_left.toString())
+                setTimeout(
+                    function(){
 
+                        time_to_redirect(time_elapsed)
+                    },100
+                )
+            }
+
+        }
     </script>

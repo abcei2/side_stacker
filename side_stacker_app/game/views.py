@@ -77,26 +77,21 @@ class GameSideStacker(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        if not self.recieve_end_flag:
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "game_command",
-                    "game_event": "USER_DISCONECTED",
-                    "message":  "user disconnected, game is over, you won!!",
-                },
-            )
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "game_command",
+                "game_event": "USER_DISCONECTED",
+                "message":  "user disconnected, game is over, you won!!",
+            },
+        )
      
         await delete_game(self.room_group_name) 
         
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
        
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        if text_data_json["game_event"]=="END":
-            self.recieve_end_flag=True
-
-        
+        text_data_json = json.loads(text_data)        
         await self.channel_layer.group_send(
             self.room_group_name,
             {
