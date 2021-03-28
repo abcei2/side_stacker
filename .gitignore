@@ -1,5 +1,5 @@
-db.sqlite3
-side_stacker/__pycache__/
-game/__pycache__/
-game/migrations/__pycache__/
-game/templatetags/__pycache__/
+side_stacker_app/db.sqlite3
+side_stacker_app/side_stacker/__pycache__/
+side_stacker_app/game/__pycache__/
+side_stacker_app/game/migrations/__pycache__/
+side_stacker_app/game/templatetags/__pycache__/
