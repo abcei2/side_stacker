@@ -52,4 +52,4 @@ https://programadorwebvalencia.com/django-chat-usando-websockets-con-salas-y-asy
 - To add .env file, to secure secret keys and db credentials.
 - Improve styles.
 - Websockets in lobby section, to enable users detect new available public games without reload page.
-- When some user left game the game is over so i put an alert to show that other user logout, but sometimes that alert do not stop the js flow and users doesn't know what happen with the game because the alert fails to show.
+- <del>When some user left game the game is over so i put an alert to show that other user logout, but sometimes that alert do not stop the js flow and users doesn't know what happen with the game because the alert fails to show.</del>
