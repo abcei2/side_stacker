@@ -60,7 +60,8 @@
             window.location.href = "/";
         }
         const SALA_CHAT = '{{ host_name }}';
-        const GAME_SOCKET = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + SALA_CHAT + '/');
+        console.log('ws://{{ hostip }}/ws/chat/')
+        const GAME_SOCKET = new WebSocket('ws://{{ hostip }}/ws/chat/' + SALA_CHAT + '/');
         const REDIRECTION_TIME_OUT=5000;
 
         if(player_tag=="X"){
@@ -75,7 +76,7 @@
                         alert("Wait for other to place the move")
                     }
                     else{
-                        myturn = true;
+                        myturn = false;
                         document.getElementById("alert_move").style.display = 'none'; // Hide          
                         make_move(index, player_tag);
                     }

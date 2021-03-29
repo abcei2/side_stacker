@@ -8,6 +8,7 @@
 
     <div class="head" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;">
         <h1>Side Stacker</h1>
+        
     </div>
     <form action="{% url 'create_game' host_name='none_room' %}" method="post">    
         {% csrf_token %}
@@ -23,7 +24,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text" id=""># Rows</span>
                 </div>
-                <input id="rows" name="rows" required="required" type="number" min="3" max="20" class="form-control">   
+                <input id="rows" name="rows" required="required" type="number" min="7" max="20" class="form-control">   
              
             </div>
             <div class="input-group" style="margin-top: 1%;width:25%;margin-left: auto;margin-right: auto;" >
@@ -32,7 +33,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text" id=""># Colmuns</span>
                 </div>
-                <input id="columns" name="columns" required="required"  min="3" max="20" type="number" class="form-control">   
+                <input id="columns" name="columns" required="required"  min="7" max="20" type="number" class="form-control">   
               
                 
             </div>  

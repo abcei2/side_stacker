@@ -29,13 +29,19 @@ def connect_game(request, host_name):
     if len(current_game)>0:
         columns=current_game[0]['columns']
         rows=current_game[0]['rows']
+        hostip=request.get_host().split(":")
+        if(len(hostip)==1):
+            hostip=hostip+":8000"
+        else:
+            hostip=request.get_host()
+        print(hostip)
         if current_game[0]['player_x']=="None":
             current_game_query.update(player_x="Groundhog_"+str(random.randint(100, 999)))
-            return  render(request, "game.html", {"host_name":host_name, "player":"X","ammount_squares":rows*columns,"rows":rows,"columns":columns})
+            return  render(request, "game.html", {"hostip":hostip,"host_name":host_name, "player":"X","ammount_squares":rows*columns,"rows":rows,"columns":columns})
         elif current_game[0]['player_y']=="None":
             current_game_query.update(player_y="RoyalEagle_"+str(random.randint(100, 999)))
-       
-            return  render(request, "game.html", {"host_name":host_name,"player":"O","ammount_squares":rows*columns,"rows":rows,"columns":columns})
+        
+            return  render(request, "game.html", {"hostip":hostip,"host_name":host_name,"player":"O","ammount_squares":rows*columns,"rows":rows,"columns":columns})
         else:        
             return redirect(f"/")
     else:
@@ -58,7 +64,8 @@ class HomeView(View):
 
     def get(self, request, *args, **kwargs):
         context={
-            "games":list(TemporalGame.objects.filter(player_y="None").values('room_name','player_x','player_y'))
+            "games":list(TemporalGame.objects.filter(player_y="None").values('room_name','player_x','player_y')),
+  
         }
 
         return render(
