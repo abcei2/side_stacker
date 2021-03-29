@@ -49,6 +49,7 @@ https://blog.logrocket.com/django-channels-and-websockets/
 https://programadorwebvalencia.com/django-chat-usando-websockets-con-salas-y-async/  
 
 ### There are many thing left to this repo:
+- Works on Google, fails css on firefox.
 - To add .env file, to secure secret keys and db credentials.
 - Improve styles.
 - Websockets in lobby section, to enable users detect new available public games without reload page.
