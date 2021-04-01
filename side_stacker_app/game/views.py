@@ -89,7 +89,10 @@ class GameSideStacker(AsyncWebsocketConsumer):
             {
                 "type": "game_command",
                 "game_event": "USER_DISCONECTED",
-                "message":  "user disconnected, game is over, you won!!",
+                "message": 
+                {
+                    "text": "user disconnected, game is over, you won!!",
+                }
             },
         )
      
@@ -98,7 +101,8 @@ class GameSideStacker(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
        
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)        
+        text_data_json = json.loads(text_data)  
+        print(text_data_json)      
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -111,7 +115,7 @@ class GameSideStacker(AsyncWebsocketConsumer):
     async def game_command(self, event):
         game_event = event["game_event"]
         message = event["message"]
-
+        
         # Send message to WebSocket
         await self.send(
             text_data=json.dumps(

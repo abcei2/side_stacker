@@ -30,8 +30,8 @@
     </div>
 
     <script>
-
         window.onload = function() {
+            
             $("#game_board").css("grid-template-columns","repeat({{ columns }}, 1fr)")
         };
         var gameBoard2d=[];
@@ -51,7 +51,8 @@
         let myturn = true;
         var player_tag = "{{ player }}"
         let elementArray = document.getElementsByClassName('square'); 
-        var win_flag=false;  
+        var win_flag=false; 
+        var end_flag=false; 
         let timer_out=0;          
 
 
@@ -62,7 +63,9 @@
         const SALA_CHAT = '{{ host_name }}';
         console.log('ws://{{ hostip }}/ws/chat/')
         const GAME_SOCKET = new WebSocket('ws://{{ hostip }}/ws/chat/' + SALA_CHAT + '/');
-        const REDIRECTION_TIME_OUT=5000;
+        const REDIRECTION_TIME_OUT=5000;        
+        const COLUMNS={{ columns }}
+        const ROWS={{ rows }}
 
         if(player_tag=="X"){
             myturn=false
@@ -70,24 +73,63 @@
         }
         for (var i = 0; i < elementArray.length; i++){
             elementArray[i].addEventListener("click", event=>{
+                if(end_flag)
+                    return
+                if(!myturn){
+                    alert("Wait for other to place the move")
+                    return
+                }
                 const index = event.path[0].getAttribute('data-index');
+                let can_stick=false;
                 if(gameBoard[index] == -1){
-                    if(!myturn){
-                        alert("Wait for other to place the move")
+                    
+
+                    let row_click=Math.floor(index/ROWS)
+                    let col_click=index%COLUMNS
+                    
+                    if( gameBoard2d[row_click][col_click]==-1){
+                        gameBoard2d=get_2dBoard(gameBoard.slice())
+                        
+                        if(col_click-1<0 || col_click+1==COLUMNS ){
+                            can_stick=true
+                        }else{
+
+                            if(gameBoard2d[row_click][col_click-1]!=-1 || gameBoard2d[row_click][col_click+1]!=-1){
+                                can_stick=true
+                            }
+                        }
+                    }else{
+                        $("#alert_move").html("This position are bussy!")
+                        //CAN'T STICK HHERE IS BUSSY
                     }
-                    else{
+                    if(can_stick) {                            
                         myturn = false;
-                        document.getElementById("alert_move").style.display = 'none'; // Hide          
+                        document.getElementById("alert_move").style.display = 'none'; // Hide       
+                        document.getElementById("alert_move").innerHTML = 'Your turn. Place your move'; // Hide   
+                      
                         make_move(index, player_tag);
+                    }else{
+                        $("#alert_move").html("You can't stick right here!")
+                        //CAN'T STICK HHERE
                     }
+                    
                 }
             })
+        }
+        function get_2dBoard(gameBoard_aux){
+            let gBoar2d=[]
+            for(let i=0;i<gameBoard_aux.length;i++)
+            {
+                gBoar2d.push(gameBoard_aux.splice(0,COLUMNS ));
+            } 
+            return gBoar2d
         }
         function make_move(index, player){
             index = parseInt(index);
             let data = {
                 "game_event": "MOVE",
                 "message": {
+                    "text":"MOVE",
                     "index": index,
                     "player": player,
                 }
@@ -95,15 +137,22 @@
             
             if(gameBoard[index] == -1){
                 moveCount++;
-                if(player == 'X')
+                if(player == 'X'){
                     gameBoard[index] = 1;
-                else if(player == 'O')
+                    elementArray[index].style.backgroundColor="red"
+                }
+                else if(player == 'O'){
                     gameBoard[index] = 0;
-                else{
+                    elementArray[index].style.backgroundColor="green"
+                }else{
                     alert("Invalid character choice");
                     return false;
                 }
-
+                if(end_flag){
+                    
+                    elementArray[index].innerHTML = player;
+                    return false;
+                }
                 gameBoard2d=[]
                 gameBoard_aux=gameBoard.slice()
                 for(let i=0;i<gameBoard_aux.length;i++)
@@ -111,7 +160,6 @@
                     gameBoard2d.push(gameBoard_aux.splice(0,{{ columns }} ));
                 } 
 
-                console.log(gameBoard2d.length,gameBoard2d[0].length)
                 for(let i=0;i<gameBoard2d.length;i++){
                     for(let j=0;j<gameBoard2d[0].length;j++){
                         win=[true,true,true,true,true,true, true,true];
@@ -141,8 +189,8 @@
                  
                         for(kk in win){
                             if(win[kk]){
-                                console.log("win on conditional",kk)
                                 win_flag=true
+                                end_flag=true
                                 break;
                             }
                         
@@ -156,10 +204,15 @@
                 }
                 
                 if(win_flag){
+                    
                     data = {
                         "game_event": "END",
-                        "message": 
-                            "PLAYER "+player+" win!!!!!"
+                        "message": {
+                            "text:":"PLAYER "+player+" win!!!!!",
+                            "index": index,
+                            "player": player,
+                        }
+                            
                         
                     }
 
@@ -190,7 +243,6 @@
         // Recibir mensaje
         GAME_SOCKET.addEventListener('message', (event) => {
             let data = JSON.parse(event.data);
-            console.log('New message',data);
       
             let message = data['message'];
             let game_event = data["game_event"];
@@ -198,21 +250,26 @@
                 case "START":
                     break;
                 case "END":
+                    end_flag=true
                     if(win_flag){
                         $("#alert_text").html("YOU ARE THE WINNER!")
                         $("#alert_text").css('color','green')
 
                     }else{
-                        
                         $("#alert_text").html("YOU ARE THE LOSER!")
                         $("#alert_text").css('color','red')
+                        
                     }
-                    
+                    if(message["player"] != player_tag){
+                        make_move(message["index"], message["player"])
+                             
+                    }
+                   
                     
                     break;
                 case "USER_DISCONECTED":
                     
-                    $("#alert_text").html(message)
+                    $("#alert_text").html(message.text)
                     $("#alert_text").css('color','green')
               
                 
@@ -230,7 +287,7 @@
                     
             }
             if(game_event=="USER_DISCONECTED" || game_event=="END"){
-                $("#game_board").css("display","none")
+   
                 $("#timer_redirect").removeAttr('hidden')
                 setTimeout(
                     function(){

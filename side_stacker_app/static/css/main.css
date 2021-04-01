@@ -8,14 +8,13 @@
     height: auto;
     max-height: 400px;
     margin: 0.5em 0;
-    overflow: scroll;
     margin-left: auto;
     margin-right: auto;
 }
 .square{
     background: #2f76c7;
-    width: 5em;
-    height: 5em;
+    width: 3em;
+    height: 3em;
     display: flex;
     justify-content: center;
     align-items: center;
