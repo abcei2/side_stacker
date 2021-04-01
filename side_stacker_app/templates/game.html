@@ -80,41 +80,44 @@
                     return
                 }
                 const index = event.path[0].getAttribute('data-index');
-                let can_stick=false;
-                if(gameBoard[index] == -1){
-                    
-
-                    let row_click=Math.floor(index/ROWS)
-                    let col_click=index%COLUMNS
-                    
-                    if( gameBoard2d[row_click][col_click]==-1){
-                        gameBoard2d=get_2dBoard(gameBoard.slice())
-                        
-                        if(col_click-1<0 || col_click+1==COLUMNS ){
-                            can_stick=true
-                        }else{
-
-                            if(gameBoard2d[row_click][col_click-1]!=-1 || gameBoard2d[row_click][col_click+1]!=-1){
-                                can_stick=true
-                            }
-                        }
-                    }else{
-                        $("#alert_move").html("This position are bussy!")
-                        //CAN'T STICK HHERE IS BUSSY
-                    }
-                    if(can_stick) {                            
-                        myturn = false;
-                        document.getElementById("alert_move").style.display = 'none'; // Hide       
-                        document.getElementById("alert_move").innerHTML = 'Your turn. Place your move'; // Hide   
-                      
-                        make_move(index, player_tag);
-                    }else{
-                        $("#alert_move").html("You can't stick right here!")
-                        //CAN'T STICK HHERE
-                    }
-                    
-                }
+                ask_if_can_stick(index)
             })
+        }
+        function ask_if_can_stick(index){
+            let can_stick=false;
+            if(gameBoard[index] == -1){
+                
+
+                let row_click=Math.floor(index/ROWS)
+                let col_click=index%COLUMNS
+                
+                if( gameBoard2d[row_click][col_click]==-1){
+                    gameBoard2d=get_2dBoard(gameBoard.slice())
+                    
+                    if(col_click-1<0 || col_click+1==COLUMNS ){
+                        can_stick=true
+                    }else{
+
+                        if(gameBoard2d[row_click][col_click-1]!=-1 || gameBoard2d[row_click][col_click+1]!=-1){
+                            can_stick=true
+                        }
+                    }
+                }else{
+                    $("#alert_move").html("This position are bussy!")
+                    //CAN'T STICK HHERE IS BUSSY
+                }
+                if(can_stick) {                            
+                    myturn = false;
+                    document.getElementById("alert_move").style.display = 'none'; // Hide       
+                    document.getElementById("alert_move").innerHTML = 'Your turn. Place your move'; // Hide   
+                    
+                    make_move(index, player_tag);
+                }else{
+                    $("#alert_move").html("You can't stick right here!")
+                    //CAN'T STICK HHERE
+                }
+                
+            }
         }
         function get_2dBoard(gameBoard_aux){
             let gBoar2d=[]
@@ -124,12 +127,13 @@
             } 
             return gBoar2d
         }
+
         function make_move(index, player){
             index = parseInt(index);
             let data = {
                 "game_event": "MOVE",
                 "message": {
-                    "text":"MOVE",
+                    "text": "MOVE",
                     "index": index,
                     "player": player,
                 }
@@ -153,69 +157,12 @@
                     elementArray[index].innerHTML = player;
                     return false;
                 }
-                gameBoard2d=[]
-                gameBoard_aux=gameBoard.slice()
-                for(let i=0;i<gameBoard_aux.length;i++)
-                {
-                    gameBoard2d.push(gameBoard_aux.splice(0,{{ columns }} ));
-                } 
-
-                for(let i=0;i<gameBoard2d.length;i++){
-                    for(let j=0;j<gameBoard2d[0].length;j++){
-                        win=[true,true,true,true,true,true, true,true];
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[0]=win[0]&&gameBoard2d[i-kk][j+kk]==gameBoard[index]} catch{win[0]=false; break; }
-                        
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[1]=win[1]&&gameBoard2d[i][j+kk]==gameBoard[index]} catch{ win[1]=false;break; }
-                        
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[2]=win[2]&&gameBoard2d[i+kk][j+kk]==gameBoard[index]} catch{win[2]=false; break; }
-
-                        for(let kk=0;kk<4;kk++)
-                            try { win[3]=win[3] && gameBoard2d[i+kk][j]==gameBoard[index] } catch{win[3]=false; break; }
-
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[4]=win[4]&&gameBoard2d[i+kk][j-kk]==gameBoard[index]} catch{win[4]=false; break; }
-
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[5]=win[5]&&gameBoard2d[i][j-kk]==gameBoard[index]} catch{win[5]=false; break; }
-
-                        for(let kk=0;kk<4;kk++)
-                            try {  win[6]=win[6]&&gameBoard2d[i-kk][j-kk]==gameBoard[index]} catch{win[6]=false; break; }
-                        
-                        for(let kk=0;kk<4;kk++) 
-                            try {  win[7]=win[7]&&(gameBoard2d[i-kk][j]==gameBoard[index])} catch{ win[7]=false; break; }
-                 
-                        for(kk in win){
-                            if(win[kk]){
-                                win_flag=true
-                                end_flag=true
-                                break;
-                            }
-                        
-                        }
-                        if(win_flag)
-                            break
-                    }    
-                    
-                    if(win_flag)
-                        break
-                }
                 
-                if(win_flag){
-                    
-                    data = {
-                        "game_event": "END",
-                        "message": {
-                            "text:":"PLAYER "+player+" win!!!!!",
-                            "index": index,
-                            "player": player,
-                        }
-                            
-                        
-                    }
+                ask_if_win(index)
 
+                if(win_flag){                    
+                    data.message.text = "PLAYER "+player+" win!!!!!"                       
+                    data.game_event= "END"
                 }
                 
                 GAME_SOCKET.send(JSON.stringify(data))
@@ -223,6 +170,52 @@
             
             elementArray[index].innerHTML = player;
             
+        }
+        function ask_if_win(index){
+            gameBoard2d=get_2dBoard(gameBoard.slice())
+            
+            for(let i=0;i<gameBoard2d.length;i++){
+                for(let j=0;j<gameBoard2d[0].length;j++){
+                    win=[true,true,true,true,true,true, true,true];
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[0]=win[0]&&gameBoard2d[i-kk][j+kk]==gameBoard[index]} catch{win[0]=false; break; }
+                    
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[1]=win[1]&&gameBoard2d[i][j+kk]==gameBoard[index]} catch{ win[1]=false;break; }
+                    
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[2]=win[2]&&gameBoard2d[i+kk][j+kk]==gameBoard[index]} catch{win[2]=false; break; }
+
+                    for(let kk=0;kk<4;kk++)
+                        try { win[3]=win[3] && gameBoard2d[i+kk][j]==gameBoard[index] } catch{win[3]=false; break; }
+
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[4]=win[4]&&gameBoard2d[i+kk][j-kk]==gameBoard[index]} catch{win[4]=false; break; }
+
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[5]=win[5]&&gameBoard2d[i][j-kk]==gameBoard[index]} catch{win[5]=false; break; }
+
+                    for(let kk=0;kk<4;kk++)
+                        try {  win[6]=win[6]&&gameBoard2d[i-kk][j-kk]==gameBoard[index]} catch{win[6]=false; break; }
+                    
+                    for(let kk=0;kk<4;kk++) 
+                        try {  win[7]=win[7]&&(gameBoard2d[i-kk][j]==gameBoard[index])} catch{ win[7]=false; break; }
+                
+                    for(kk in win){
+                        if(win[kk]){
+                            win_flag=true
+                            end_flag=true
+                            break;
+                        }
+                    
+                    }
+                    if(win_flag)
+                        break
+                }    
+                
+                if(win_flag)
+                    break
+            }
         }
 
 
